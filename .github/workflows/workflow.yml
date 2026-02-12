@@ -1,0 +1,23 @@
+name: workflow.yml
+on: workflow_dispatch
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    # Required for Workload Identity Federation
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Authenticate to Google Cloud
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        if: always()
+        with:
+          workload_identity_provider: 'projects/981170545333/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider'
+          service_account: 'github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com'
