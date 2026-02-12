@@ -21,3 +21,10 @@ jobs:
         with:
           workload_identity_provider: 'projects/981170545333/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider'
           service_account: 'github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com'
+      - name: Upload Playwright Report to GCS
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        if: always()
+        with:
+          path: 'playwright-report'
+          destination: 'e2e-artifacts/playwright-reports/${{ github.run_id }}'
+          parent: false
