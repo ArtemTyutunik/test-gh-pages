@@ -44,7 +44,7 @@ jobs:
           
           # Try to generate signed URL and capture both output and errors
           gcloud storage sign-url "$FILE_URL" \
-            --duration=7d \
+            --duration=12h --region=us \
             --impersonate-service-account=$SERVICE_ACCOUNT 2>&1 | tee /tmp/sign-output.txt
           
           echo "---"
