@@ -33,23 +33,40 @@ jobs:
           # Upload all files
           gsutil -m rsync -r -d playwright-report gs://e2e-artifacts/playwright-reports/${{ github.run_id }}
 
-      - name: Generate Signed URL
+      - name: Generate Signed URL (Debug)
         if: always()
         run: |
-          # Generate signed URL valid for 7 days
-          run: |
-            SIGNED_URL=$(gcloud storage sign-url \
-            gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html \
-            --duration=12h --region=us \
-            --impersonate-service-account=github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com)
+          SERVICE_ACCOUNT="github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com"
+          FILE_URL="gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html"
           
+          echo "Debug: Attempting to sign URL for: $FILE_URL"
+          echo "Debug: Using service account: $SERVICE_ACCOUNT"
           
-          echo "📊 Signed Report URL (valid for 7 days):"
-          echo "$SIGNED_URL"
+          # Try to generate signed URL and capture both output and errors
+          gcloud storage sign-url "$FILE_URL" \
+            --duration=7d \
+            --impersonate-service-account=$SERVICE_ACCOUNT 2>&1 | tee /tmp/sign-output.txt
           
-          # Add to GitHub Step Summary
-          echo "## 📊 Playwright Test Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**[Click here to view the report]($SIGNED_URL)**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "⏱️ Link expires in 7 days" >> $GITHUB_STEP_SUMMARY
+          echo "---"
+          echo "Raw output:"
+          cat /tmp/sign-output.txt
+#      - name: Generate Signed URL
+#        if: always()
+#        run: |
+#          # Generate signed URL valid for 7 days
+#          run: |
+#            SIGNED_URL=$(gcloud storage sign-url \
+#            gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html \
+#            --duration=12h --region=us \
+#            --impersonate-service-account=github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com)
+#
+#
+#          echo "📊 Signed Report URL (valid for 7 days):"
+#          echo "$SIGNED_URL"
+#
+#          # Add to GitHub Step Summary
+#          echo "## 📊 Playwright Test Report" >> $GITHUB_STEP_SUMMARY
+#          echo "" >> $GITHUB_STEP_SUMMARY
+#          echo "**[Click here to view the report]($SIGNED_URL)**" >> $GITHUB_STEP_SUMMARY
+#          echo "" >> $GITHUB_STEP_SUMMARY
+#          echo "⏱️ Link expires in 7 days" >> $GITHUB_STEP_SUMMARY
