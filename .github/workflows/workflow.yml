@@ -21,10 +21,32 @@ jobs:
         with:
           workload_identity_provider: 'projects/981170545333/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider'
           service_account: 'github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com'
-      - name: Upload Playwright Report to GCS
-        uses: 'google-github-actions/upload-cloud-storage@v2'
+
+      # Replace your upload step with these steps:
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
         if: always()
-        with:
-          path: 'playwright-report'
-          destination: 'e2e-artifacts/playwright-reports/${{ github.run_id }}'
-          parent: false
+
+      - name: Upload Playwright Report to GCS
+        if: always()
+        run: |
+          # Upload all files
+          gsutil -m rsync -r -d playwright-report gs://e2e-artifacts/playwright-reports/${{ github.run_id }}
+
+      - name: Generate Signed URL
+        if: always()
+        run: |
+          # Generate signed URL valid for 7 days
+          SIGNED_URL=$(gcloud storage sign-url \
+            gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html \
+            --duration=7d)
+          
+          echo "📊 Signed Report URL (valid for 7 days):"
+          echo "$SIGNED_URL"
+          
+          # Add to GitHub Step Summary
+          echo "## 📊 Playwright Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**[Click here to view the report]($SIGNED_URL)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ Link expires in 7 days" >> $GITHUB_STEP_SUMMARY
