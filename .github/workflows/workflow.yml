@@ -40,7 +40,7 @@ jobs:
           run: |
             SIGNED_URL=$(gcloud storage sign-url \
             gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html \
-            --duration=12h \
+            --duration=12h --region=us \
             --impersonate-service-account=github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com)
           
           
