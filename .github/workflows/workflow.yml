@@ -37,9 +37,12 @@ jobs:
         if: always()
         run: |
           # Generate signed URL valid for 7 days
-          SIGNED_URL=$(gcloud storage sign-url \
+          run: |
+            SIGNED_URL=$(gcloud storage sign-url \
             gs://e2e-artifacts/playwright-reports/${{ github.run_id }}/index.html \
-            --duration=7d)
+            --duration=7d \
+            --impersonate-service-account=github-actions-sa@project-25129d1b-c92f-49ae-a5a.iam.gserviceaccount.com)
+          
           
           echo "📊 Signed Report URL (valid for 7 days):"
           echo "$SIGNED_URL"
