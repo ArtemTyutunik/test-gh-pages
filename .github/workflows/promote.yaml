@@ -1,0 +1,30 @@
+name: Promote
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: echo "Building artifact for commit ${{ github.sha }}"
+
+  promote:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: promotion
+    steps:
+      - name: Awaiting approval
+        run: echo "Approval granted - proceeding with promotion."
+
+  next-step:
+    needs: promote
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run next step
+        run: echo "Running post-approval step for ${{ github.sha }}"
